@@ -4,8 +4,18 @@
 
 package com.araj.cucumber.elasticsearch.utils;
 
-import java.time.LocalDateTime;
+//import java.text.DateFormat;
+//import java.text.SimpleDateFormat;
+//import java.time.LocalDateTime;
+//import java.time.format.*;
+//
+//import java.time.ZoneId;
+//import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
+//import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +48,7 @@ public class CucElasticPluginReportGenerator {
     private final ResultSender resultSender;
 
     @Inject
-    public CucElasticPluginReportGenerator(final CucElasticPluginLogger logger, 
+    public CucElasticPluginReportGenerator(final CucElasticPluginLogger logger,
     		final PropertyManager propertyManager,
     		final ResultSender resultSender) {
     	this.logger = logger;
@@ -47,15 +57,15 @@ public class CucElasticPluginReportGenerator {
     }
 
     public void generateAndSendReportDocumentsForElasticSearch(
-    		final AllScenariosCollection allScenariosCollection) 
+    		final AllScenariosCollection allScenariosCollection)
     				throws CucElasticPluginException {
 
     	if("true".equalsIgnoreCase(propertyManager.getSendFeatureSummaryToElasticSearch())) {
 	    	// Feature Summary docs
-	    	List<Object> featureSummaries = 
+	    	List<Object> featureSummaries =
 				generateFeatureDocuments(allScenariosCollection);
-	    	String url = String.format("http://%s/%s/%s", 
-					propertyManager.getElasticSearchHostName(), 
+	    	String url = String.format("http://%s/%s/%s",
+					propertyManager.getElasticSearchHostName(),
 					propertyManager.getFeatureSummaryIndex(),
 					propertyManager.getFeatureSummaryDocumentType());
 	    	logger.info("-----------------------------------------------------------");
@@ -68,12 +78,12 @@ public class CucElasticPluginReportGenerator {
     	}
         if("true".equalsIgnoreCase(propertyManager.getSendScenarioSummaryToElasticSearch())) {
 	    	// Scenario Summary docs
-	    	List<Object> scenarioSummaries = 
+	    	List<Object> scenarioSummaries =
 				generateScenarioSummaryDocuments(allScenariosCollection);
 	    	logger.info("-----------------------------------------------------------");
         	logger.info("Sending the ScenarioSummary documents to elastic search");
-			String url = String.format("http://%s/%s/%s", 
-				propertyManager.getElasticSearchHostName(), 
+			String url = String.format("http://%s/%s/%s",
+				propertyManager.getElasticSearchHostName(),
 				propertyManager.getScenarioSummaryIndex(),
 				propertyManager.getScenarioSummaryDocumentType());
 	        resultSender.sendTOElasticSearch(scenarioSummaries, url);
@@ -84,12 +94,12 @@ public class CucElasticPluginReportGenerator {
     	}
         if("true".equalsIgnoreCase(propertyManager.getSendStepSummaryToElasticSearch())) {
 	        // Step Summary docs
-	    	List<Object> stepSummaries = 
+	    	List<Object> stepSummaries =
 				generateStepSummaryDocuments(allScenariosCollection);
         	logger.info("-----------------------------------------------------------");
     		logger.info("Sending the StepSummary documents to elastic search");
-			String url = String.format("http://%s/%s/%s", 
-				propertyManager.getElasticSearchHostName(), 
+			String url = String.format("http://%s/%s/%s",
+				propertyManager.getElasticSearchHostName(),
 				propertyManager.getStepSummaryIndex(),
 				propertyManager.getStepSummaryDocumentType());
 
@@ -102,12 +112,12 @@ public class CucElasticPluginReportGenerator {
     	}
         if("true".equalsIgnoreCase(propertyManager.getSendTagSummaryToElasticSearch())) {
 		    // Tag Summary docs
-	    	List<Object> tagSummaries = 
+	    	List<Object> tagSummaries =
 				generateTagSummaryDocuments(allScenariosCollection);
         	logger.info("-----------------------------------------------------------");
     		logger.info("Sending the TagSummary documents to elastic search");
-			String url = String.format("http://%s/%s/%s", 
-				propertyManager.getElasticSearchHostName(), 
+			String url = String.format("http://%s/%s/%s",
+				propertyManager.getElasticSearchHostName(),
 				propertyManager.getTagSummaryIndex(),
 				propertyManager.getTagSummaryDocumentType());
 
@@ -120,13 +130,13 @@ public class CucElasticPluginReportGenerator {
     	}
     }
 
-      
+
     /**
      * Generate Documents for features.
      *
      * @param allScenariosCollection The {@link AllScenariosCollection}.
      * @throws CucElasticPluginException The {@link CucElasticPluginException}.
-     * @return a List of Feature documents 
+     * @return a List of Feature documents
      */
     private List<Object> generateFeatureDocuments(
     		final AllScenariosCollection allScenariosCollection)
@@ -134,11 +144,11 @@ public class CucElasticPluginReportGenerator {
         List<Object> featureSummaries = new ArrayList<>();
 
         // Feature summary collection
-        AllFeaturesCollection allFeaturesCollection = 
+        AllFeaturesCollection allFeaturesCollection =
     		new AllFeaturesCollection(allScenariosCollection.getReports());
-        
+
         // Feature summary documents
-        for (Map.Entry<Feature, ResultCount> entry : 
+        for (Map.Entry<Feature, ResultCount> entry :
         		allFeaturesCollection.getFeatureResultCounts().entrySet()) {
     		FeatureSummary featureSummary = new FeatureSummary();
         	featureSummary.setfeatureIndex(entry.getKey().getIndex());
@@ -148,10 +158,11 @@ public class CucElasticPluginReportGenerator {
         	featureSummary.setFailedScenarios(entry.getValue().getFailed());
         	featureSummary.setSkippedScenarios(entry.getValue().getSkipped());
         	featureSummary.setStatus(
-    			entry.getValue().getFailed() > 0 ? 
+    			entry.getValue().getFailed() > 0 ?
 					Status.FAILED.getStatusAsString() :
 						Status.PASSED.getStatusAsString());
-        	featureSummary.setDate(LocalDateTime.now().toString());
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+					featureSummary.setDate(ZonedDateTime.now().format(formatter));
         	featureSummaries.add(featureSummary);
         }
         return featureSummaries;
@@ -165,7 +176,7 @@ public class CucElasticPluginReportGenerator {
      * @return a List of Scenario documents
      */
     private List<Object> generateScenarioSummaryDocuments(
-    		final AllScenariosCollection allScenariosCollection) 
+    		final AllScenariosCollection allScenariosCollection)
 				throws CucElasticPluginException {
     	List<Object> scenarioSummaries = new ArrayList<>();
     	for(Report report : allScenariosCollection.getReports()) {
@@ -176,7 +187,8 @@ public class CucElasticPluginReportGenerator {
     			scenarioSummary.setScenarioIndex(element.getScenarioIndex());
     			scenarioSummary.setscenarioName(element.getName());
     			scenarioSummary.setStatus(element.getStatus().getStatusAsString());
-    			scenarioSummary.setDate(LocalDateTime.now().toString());
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+					scenarioSummary.setDate(ZonedDateTime.now().format(formatter));
     			scenarioSummaries.add(scenarioSummary);
 			}
         }
@@ -188,10 +200,10 @@ public class CucElasticPluginReportGenerator {
      *
      * @param allScenariosCollection The {@link AllScenariosCollection}.
      * @throws CucElasticPluginException The {@link CucElasticPluginException}.
-     * @return a List of Steps documents 
+     * @return a List of Steps documents
      */
     private List<Object> generateStepSummaryDocuments(
-		final AllScenariosCollection allScenariosCollection) 
+		final AllScenariosCollection allScenariosCollection)
 			throws CucElasticPluginException {
        	List<Object> stepSummaries = new ArrayList<>();
     	for(Report report : allScenariosCollection.getReports()) {
@@ -203,7 +215,8 @@ public class CucElasticPluginReportGenerator {
     			stepSummary.setPassedSteps(element.getTotalNumberOfPassedSteps());
     			stepSummary.setFailedSteps(element.getTotalNumberOfFailedSteps());
     			stepSummary.setSkippedSteps(element.getTotalNumberOfSkippedSteps());
-    			stepSummary.setDate(LocalDateTime.now().toString());
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+					stepSummary.setDate(ZonedDateTime.now().format(formatter));
     			stepSummaries.add(stepSummary);
 			}
         }
@@ -217,16 +230,16 @@ public class CucElasticPluginReportGenerator {
      * @throws CluecumberException The {@link CucElasticPluginException}.
      */
     private List<Object> generateTagSummaryDocuments(
-    		final AllScenariosCollection allScenariosCollection) 
+    		final AllScenariosCollection allScenariosCollection)
 				throws CucElasticPluginException {
 
     	List<Object> tagSummaries = new ArrayList<>();
 
-        AllTagsCollection allTagsCollection = 
+        AllTagsCollection allTagsCollection =
     		new AllTagsCollection(allScenariosCollection.getReports());
 
         // Tag summary
-        for (Map.Entry<Tag, ResultCount> entry : 
+        for (Map.Entry<Tag, ResultCount> entry :
         	allTagsCollection.getTagResultCounts().entrySet()) {
         	TagSummary tagSummary = new TagSummary();
         	tagSummary.setTagName(entry.getKey().getName());
@@ -234,8 +247,8 @@ public class CucElasticPluginReportGenerator {
         	tagSummary.setFailedScenarios(entry.getValue().getFailed());
         	tagSummary.setSkippedScenarios(entry.getValue().getSkipped());
         	tagSummary.setTotalScenarios(entry.getValue().getTotal());
-        	tagSummary.setDate(LocalDateTime.now().toString());
-        	tagSummaries.add(tagSummary);
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+					tagSummary.setDate(ZonedDateTime.now().format(formatter));
         }
         return tagSummaries;
     }

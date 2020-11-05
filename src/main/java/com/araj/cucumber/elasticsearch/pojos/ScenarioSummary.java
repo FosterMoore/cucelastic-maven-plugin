@@ -2,14 +2,18 @@ package com.araj.cucumber.elasticsearch.pojos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ScenarioSummary {
 
 	@JsonProperty("feature_index")
 	private int featureIndex;
-	
+
 	@JsonProperty("featureName")
 	private String featureName;
-	
+
     @JsonProperty("scenario_index")
     private int scenarioIndex;
 
@@ -18,7 +22,7 @@ public class ScenarioSummary {
 
     @JsonProperty("status")
     private String status;
-    
+
     @JsonProperty("date")
     private String date;
 
@@ -28,7 +32,7 @@ public class ScenarioSummary {
     public void setFeatureName(String featureName) {
     	this.featureName = featureName;
     }
-    
+
     public void setScenarioIndex(int scenarioIndex) {
         this.scenarioIndex = scenarioIndex;
     }
@@ -40,7 +44,7 @@ public class ScenarioSummary {
     public void setStatus(String status) {
         this.status = status;
     }
-    
+
     public void setDate(String date) {
         this.date = date;
     }

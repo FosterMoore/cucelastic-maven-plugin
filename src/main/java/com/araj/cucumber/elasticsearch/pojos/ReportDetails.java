@@ -15,7 +15,7 @@ public class ReportDetails {
 
     public ReportDetails(final String pageName) {
         this.pageName = pageName;
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSSZ");
         Date date = new Date();
         this.date = dateFormat.format(date);
     }
@@ -31,7 +31,7 @@ public class ReportDetails {
     public String getDate() {
         return date;
     }
-    
+
     public String getPageName() {
         return pageName;
     }
